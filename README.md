@@ -236,6 +236,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 👨‍💻 Author
 
-Built with ❤️ by **Ayush Raj**
+Built with by **Ayush Raj**
 
 [![GitHub](https://img.shields.io/badge/GitHub-itsRajbro-black?style=flat&logo=github)](https://github.com/itsRajbro)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Ayush_Raj-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/www.linkedin.com/in/ayush-raj-25j07)
