@@ -128,6 +128,21 @@ function showResult(data, file) {
   reader.onload = e => { document.getElementById('resultPreviewImg').src = e.target.result; };
   reader.readAsDataURL(file);
 
+  const existingHint = document.getElementById('saveHint');
+  if (existingHint) existingHint.remove();
+
+  if (!data.saved) {
+    const hint = document.createElement('div');
+    hint.id = 'saveHint';
+    hint.style.cssText = `
+      margin-top: 10px; padding: 10px 14px;
+      background: #eff6ff; border: 1px solid #bfdbfe;
+      border-radius: 8px; font-size: 0.8rem; color: #1e40af;
+      display: flex; align-items: center; gap: 8px;
+    `;
+    hint.innerHTML = '💾 <span><a href="/login" style="font-weight:600;color:#1d4ed8;">Log in</a> or <a href="/signup" style="font-weight:600;color:#1d4ed8;">Sign up</a> to save this scan to your history.</span>';
+    document.getElementById('resultContent').appendChild(hint);
+  }
   analyzeBtn.disabled = false;
 
   // Scroll to result on mobile

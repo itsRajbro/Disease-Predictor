@@ -210,7 +210,6 @@ def admin():
 
 # ── Route: Predict ────────────────────────────────────────────────────────────
 @app.route('/predict', methods=['POST'])
-@login_required
 def predict():
     if 'image' not in request.files or 'disease' not in request.form:
         return jsonify({'error': 'Image and disease type required'}), 400
@@ -238,20 +237,22 @@ def predict():
     label = labels[idx]
     confidence_rounded = round(confidence_pct * 100, 2)
 
-    # Save to DB
-    scan = Scan(
-        user_id=current_user.id,
-        disease_type=disease,
-        prediction=label,
-        confidence=confidence_rounded
-    )
-    db.session.add(scan)
-    db.session.commit()
+    # ── Only save to DB if user is logged in ──────────────────────────────────
+    if current_user.is_authenticated:
+        scan = Scan(
+            user_id=current_user.id,
+            disease_type=disease,
+            prediction=label,
+            confidence=confidence_rounded
+        )
+        db.session.add(scan)
+        db.session.commit()
 
     return jsonify({
         'disease_type': disease,
         'prediction':   label,
-        'confidence':   confidence_rounded
+        'confidence':   confidence_rounded,
+        'saved':        current_user.is_authenticated
     })
 
 # ── Init DB + Admin ───────────────────────────────────────────────────────────
