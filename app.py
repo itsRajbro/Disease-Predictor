@@ -94,22 +94,24 @@ try:
 except Exception as e:
     print(f"❌ Model download failed: {e}")
 
-MODELS = {}
 MODEL_FILES = {
     "cxr":     f"{MODEL_DIR}/cxr_model.h5",
     "malaria":  f"{MODEL_DIR}/malaria_model.h5",
     "ocular":   f"{MODEL_DIR}/ocular_model.h5",
     "brain":    f"{MODEL_DIR}/brain_model.h5",
 }
-for name, path in MODEL_FILES.items():
-    try:
-        if os.path.exists(path):
+MODELS = {}
+
+def get_model(name):
+    if name not in MODELS:
+        path = MODEL_FILES.get(name)
+        if path and os.path.exists(path):
+            print(f"⏳ Loading {name} model...")
             MODELS[name] = tf.keras.models.load_model(path)
             print(f"✅ Loaded {name} model")
         else:
-            print(f"⚠️ Model file not found: {path}")
-    except Exception as e:
-        print(f"❌ Failed to load {name}: {e}")
+            return None
+    return MODELS.get(name)
 LABELS = {
     "cxr":    {0: "COVID-19", 1: "Normal", 2: "Pneumonia", 3: "Tuberculosis"},
     "malaria": {0: "Malaria Detected (Parasitized)", 1: "Normal (Uninfected)"},
@@ -252,12 +254,14 @@ def predict():
         return jsonify({'error': 'Image and disease type required'}), 400
 
     disease = request.form['disease'].lower()
-    if disease not in MODELS:
+    if disease not in MODEL_FILES:
         return jsonify({'error': f"Model for '{disease}' not loaded"}), 400
 
     image_bytes = request.files['image'].read()
     processed   = preprocess_image(image_bytes)
-    model       = MODELS[disease]
+    model = get_model(disease)
+    if model is None:
+        return jsonify({'error': f'Model for {disease} not available'}), 500
     prediction  = model.predict(processed)
     labels      = LABELS[disease]
 
