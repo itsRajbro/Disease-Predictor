@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediScan AI — Disease Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <div class="nav-logo-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="8" y="1" width="4" height="18" rx="2" fill="white"/>
+            <rect x="1" y="8" width="18" height="4" rx="2" fill="white"/>
+          </svg>
+        </div>
+        MediScan <em>AI</em>
+      </a>
+      <div class="nav-links">
+        <a href="#scan" class="nav-link">Scan</a>
+        <a href="#diseases" class="nav-link">Diseases</a>
+        <a href="#about" class="nav-link">About</a>
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_admin %}
+            <a href="/admin" class="nav-link" style="color:#fbbf24;">⚙ Admin</a>
+          {% endif %}
+          <a href="/dashboard" class="nav-link">Dashboard</a>
+          <a href="/logout" class="nav-cta" style="background:#e8f2fc;color:#0b3d91;">Logout</a>
+        {% else %}
+          <a href="/login" class="nav-link">Login</a>
+          <a href="/signup" class="nav-cta">Sign Up →</a>
+        {% endif %}
+      </div>
+      <button class="nav-hamburger" id="hamburger" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <a href="#scan" onclick="toggleMenu()">Scan</a>
+      <a href="#diseases" onclick="toggleMenu()">Diseases</a>
+      <a href="#about" onclick="toggleMenu()">About</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-mesh"></div>
+    <div class="hero-grid-pattern"></div>
+    <div class="hero-inner">
+      <div class="hero-tag">
+        <span class="tag-dot"></span>
+        AI-Powered Medical Imaging
+      </div>
+      <h1 class="hero-title">
+        Detect Disease.<br/>
+        <em>Earlier. Smarter.</em>
+      </h1>
+      <p class="hero-desc">
+        Upload a medical image and our deep learning models analyze it for signs of disease across four critical categories — in under two seconds.
+      </p>
+      <div class="hero-actions">
+        <a href="#scan" class="btn-primary">Start Analysis →</a>
+        <a href="#diseases" class="btn-ghost">View Diseases</a>
+      </div>
+      <div class="hero-floats">
+        <div class="float-card fc1">
+          <div class="fc-icon">🫁</div>
+          <div>
+            <strong>CXR Analysis</strong>
+            <small>COVID · Pneumonia · TB</small>
+          </div>
+        </div>
+        <div class="float-card fc2">
+          <div class="fc-pulse"></div>
+          <span>Analyzing...</span>
+        </div>
+        <div class="float-card fc3">
+          <span class="fc3-label">Result</span>
+          <strong class="fc3-result">Normal</strong>
+          <span class="fc3-conf">97.4% confidence</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-stats-bar">
+      <div class="hsb-inner">
+        <div class="hstat"><span class="hn">4</span><span class="hl">Disease Models</span></div>
+        <div class="hsep"></div>
+        <div class="hstat"><span class="hn">98%</span><span class="hl">Avg. Accuracy</span></div>
+        <div class="hsep"></div>
+        <div class="hstat"><span class="hn">&lt;2s</span><span class="hl">Analysis Time</span></div>
+        <div class="hsep"></div>
+        <div class="hstat"><span class="hn">Free</span><span class="hl">No Sign-up</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Disease Info Cards ── -->
+  <section class="diseases-section" id="diseases">
+    <div class="section-inner">
+      <div class="section-header">
+        <span class="eyebrow">Supported Conditions</span>
+        <h2 class="section-title">Four Models.<br/><em>One Platform.</em></h2>
+        <p class="section-desc">Each model is trained on thousands of verified medical images using convolutional neural networks optimized for diagnostic imaging.</p>
+      </div>
+      <div class="disease-grid">
+
+        <div class="dcard" style="--accent:#1a5fa8;--accent-light:#e8f2fc;">
+          <div class="dcard-top">
+            <div class="dcard-emoji">🫁</div>
+            <span class="dcard-badge">X-Ray</span>
+          </div>
+          <h3>Chest X-Ray</h3>
+          <p>Identifies respiratory diseases from chest radiographs including COVID-19, bacterial pneumonia, and tuberculosis with multi-class classification.</p>
+          <div class="dcard-tags">
+            <span>COVID-19</span><span>Pneumonia</span><span>Tuberculosis</span><span>Normal</span>
+          </div>
+          <div class="dcard-footer">
+            <span>Input: Chest X-Ray</span>
+            <a href="#scan">Scan →</a>
+          </div>
+        </div>
+
+        <div class="dcard" style="--accent:#c0392b;--accent-light:#fdecea;">
+          <div class="dcard-top">
+            <div class="dcard-emoji">🔬</div>
+            <span class="dcard-badge">Microscopy</span>
+          </div>
+          <h3>Malaria Detection</h3>
+          <p>Analyzes blood smear microscopy images to detect the presence of malaria parasites in red blood cells with binary classification.</p>
+          <div class="dcard-tags">
+            <span>Parasitized</span><span>Uninfected</span>
+          </div>
+          <div class="dcard-footer">
+            <span>Input: Blood Smear</span>
+            <a href="#scan">Scan →</a>
+          </div>
+        </div>
+
+        <div class="dcard" style="--accent:#0a7c6e;--accent-light:#e0f5f2;">
+          <div class="dcard-top">
+            <div class="dcard-emoji">👁️</div>
+            <span class="dcard-badge">Retinal</span>
+          </div>
+          <h3>Ocular Disease</h3>
+          <p>Classifies retinal fundus images across eight categories of ocular conditions including glaucoma, cataracts, and diabetic retinopathy.</p>
+          <div class="dcard-tags">
+            <span>Glaucoma</span><span>Cataract</span><span>Retinopathy</span><span>+5 more</span>
+          </div>
+          <div class="dcard-footer">
+            <span>Input: Retinal Scan</span>
+            <a href="#scan">Scan →</a>
+          </div>
+        </div>
+
+        <div class="dcard" style="--accent:#6a1b9a;--accent-light:#f3e5f5;">
+          <div class="dcard-top">
+            <div class="dcard-emoji">🧠</div>
+            <span class="dcard-badge">MRI</span>
+          </div>
+          <h3>Brain Tumor</h3>
+          <p>Detects the presence of brain tumors in MRI scans using binary classification trained on verified neuroimaging datasets.</p>
+          <div class="dcard-tags">
+            <span>Tumor Detected</span><span>No Tumor</span>
+          </div>
+          <div class="dcard-footer">
+            <span>Input: Brain MRI</span>
+            <a href="#scan">Scan →</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Scan Tool ── -->
+  <section class="scan-section" id="scan">
+    <div class="section-inner">
+      <div class="section-header">
+        <span class="eyebrow">AI Analysis Tool</span>
+        <h2 class="section-title">Upload & <em>Analyze</em></h2>
+        <p class="section-desc">Select a disease category, upload your medical image, and receive an AI-powered prediction instantly.</p>
+      </div>
+
+      <div class="tool-grid">
+        <!-- Left -->
+        <div class="panel panel-left">
+          <div class="panel-block">
+            <div class="panel-label"><span class="step-num">01</span> Select Condition</div>
+            <div class="disease-cards">
+              <label class="disease-card active" data-value="cxr">
+                <input type="radio" name="disease" value="cxr" checked hidden/>
+                <div class="dc-icon">🫁</div>
+                <div class="dc-info"><strong>Chest X-Ray</strong><small>COVID-19 · Pneumonia · TB</small></div>
+                <div class="dc-check">✓</div>
+              </label>
+              <label class="disease-card" data-value="malaria">
+                <input type="radio" name="disease" value="malaria" hidden/>
+                <div class="dc-icon">🔬</div>
+                <div class="dc-info"><strong>Malaria</strong><small>Blood Smear Analysis</small></div>
+                <div class="dc-check">✓</div>
+              </label>
+              <label class="disease-card" data-value="ocular">
+                <input type="radio" name="disease" value="ocular" hidden/>
+                <div class="dc-icon">👁️</div>
+                <div class="dc-info"><strong>Ocular Disease</strong><small>Retinal Scan Classification</small></div>
+                <div class="dc-check">✓</div>
+              </label>
+              <label class="disease-card" data-value="brain">
+                <input type="radio" name="disease" value="brain" hidden/>
+                <div class="dc-icon">🧠</div>
+                <div class="dc-info"><strong>Brain Tumor</strong><small>MRI Detection</small></div>
+                <div class="dc-check">✓</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="panel-block">
+            <div class="panel-label"><span class="step-num">02</span> Upload Image</div>
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" id="imageInput" accept="image/*" hidden/>
+              <div class="upload-placeholder" id="uploadPlaceholder">
+                <div class="up-svg">
+                  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                    <circle cx="22" cy="22" r="21" stroke="#c8dff5" stroke-width="1.5"/>
+                    <path d="M22 12v14M22 12l-6 6M22 12l6 6" stroke="#1a5fa8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M13 34h18" stroke="#1a5fa8" stroke-width="2.2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <p class="up-main">Drop image here</p>
+                <p class="up-sub">or <span class="up-link" onclick="document.getElementById('imageInput').click()">browse files</span></p>
+                <p class="up-formats">JPG · PNG · JPEG</p>
+              </div>
+              <img id="previewImg" src="" alt="Preview" style="display:none;"/>
+            </div>
+            <button class="analyze-btn" id="analyzeBtn" onclick="predict()" disabled>
+              <span>Analyze Image</span>
+              <span class="abtn-arr">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right -->
+        <div class="panel panel-right" id="resultPanel">
+          <div class="result-empty" id="resultEmpty">
+            <div class="rings">
+              <div class="ring r1"></div>
+              <div class="ring r2"></div>
+              <div class="ring r3"></div>
+              <div class="ring-center">AI</div>
+            </div>
+            <h3>Ready to Analyze</h3>
+            <p>Upload a medical image and click Analyze to receive your AI prediction.</p>
+          </div>
+
+          <div class="result-content" id="resultContent" style="display:none;">
+            <div class="result-top-row">
+              <div class="result-type-pill" id="resultDiseaseType"></div>
+            </div>
+            <div class="verdict-block" id="verdictBlock">
+              <p class="vb-label">Prediction</p>
+              <h2 class="vb-text" id="resultVerdict"></h2>
+              <div class="vb-tag" id="resultTag"></div>
+            </div>
+            <div class="conf-block">
+              <div class="conf-row">
+                <span>Confidence Score</span>
+                <span class="conf-pct" id="confidenceValue"></span>
+              </div>
+              <div class="conf-track"><div class="conf-fill" id="confidenceBar"></div></div>
+            </div>
+            <div class="result-img-wrap">
+              <img id="resultPreviewImg" src="" alt="Analyzed"/>
+              <div class="result-img-label">Analyzed Image</div>
+            </div>
+            <div class="disclaimer-box">
+              <span>⚠️</span>
+              <p>For research assistance only. Always consult a qualified medical professional for clinical decisions.</p>
+            </div>
+            <button class="reset-btn" onclick="resetTool()">← New Analysis</button>
+          </div>
+
+          <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+            <div class="loading-ring"></div>
+            <p>Analyzing<span class="ldots"></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── About ── -->
+  <section class="about-section" id="about">
+    <div class="section-inner">
+      <div class="about-grid">
+        <div class="about-left">
+          <span class="eyebrow">About MediScan AI</span>
+          <h2 class="section-title">Built for Early<br/><em>Detection.</em></h2>
+          <p>MediScan AI uses convolutional neural networks trained on open medical imaging datasets to provide fast, accessible disease screening for research and educational purposes.</p>
+          <p style="margin-top:1rem;">Each model was trained using TensorFlow with data augmentation and dropout regularization to improve generalization across diverse image sources.</p>
+          <div class="about-note">
+            <strong>⚕️ Medical Disclaimer</strong>
+            <p>This tool is not a certified medical device. Results should not be used as the basis for clinical diagnosis or treatment decisions.</p>
+          </div>
+        </div>
+        <div class="about-right">
+          <div class="tech-list">
+            <div class="tech-item"><div class="ti-icon">🧠</div><div><strong>TensorFlow / Keras</strong><small>CNN model training & inference</small></div></div>
+            <div class="tech-item"><div class="ti-icon">🐍</div><div><strong>Python / Flask</strong><small>Backend API & routing</small></div></div>
+            <div class="tech-item"><div class="ti-icon">🖼️</div><div><strong>Pillow / NumPy</strong><small>Image preprocessing pipeline</small></div></div>
+            <div class="tech-item"><div class="ti-icon">📊</div><div><strong>Kaggle Datasets</strong><small>Verified open medical imaging data</small></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div class="nav-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <rect x="8" y="1" width="4" height="18" rx="2" fill="white"/>
+            <rect x="1" y="8" width="18" height="4" rx="2" fill="white"/>
+          </svg>
+        </div>
+        <span>MediScan <em>AI</em></span>
+      </div>
+      <p class="footer-note">For educational and research use only. Not a substitute for professional medical advice.</p>
+      <p class="footer-copy">© 2026 MediScan AI · Built with Python, Flask & TensorFlow.</p>
+    </div>
+  </footer>
+
+  <script src="/static/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — MediScan AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/dashboard.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="dash-nav">
+    <div class="dash-nav-inner">
+      <a href="/" class="dash-logo">
+        <div class="dash-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <rect x="8" y="1" width="4" height="18" rx="2" fill="white"/>
+            <rect x="1" y="8" width="18" height="4" rx="2" fill="white"/>
+          </svg>
+        </div>
+        MediScan <em>AI</em>
+      </a>
+      <div class="dash-nav-links">
+        <a href="/dashboard" class="dnl">My Dashboard</a>
+        <a href="/#scan" class="dnl">New Scan</a>
+        <div class="dash-user">
+          <div class="dash-avatar admin-av">A</div>
+          <span>Admin</span>
+        </div>
+        <a href="/logout" class="dnl logout-link">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <h1><em>Admin</em> Analytics</h1>
+        <p>Platform-wide statistics and scan activity</p>
+      </div>
+      <span class="admin-badge">⚙ Admin Panel</span>
+    </div>
+
+    <!-- Top Stats -->
+    <div class="dash-stats">
+      <div class="dstat-card">
+        <div class="dstat-icon">👥</div>
+        <div>
+          <span class="dstat-num">{{ total_users }}</span>
+          <span class="dstat-label">Total Users</span>
+        </div>
+      </div>
+      <div class="dstat-card">
+        <div class="dstat-icon">🔬</div>
+        <div>
+          <span class="dstat-num">{{ total_scans }}</span>
+          <span class="dstat-label">Total Scans</span>
+        </div>
+      </div>
+      <div class="dstat-card">
+        <div class="dstat-icon">🫁</div>
+        <div>
+          <span class="dstat-num">{{ disease_counts.get('cxr', 0) }}</span>
+          <span class="dstat-label">CXR Scans</span>
+        </div>
+      </div>
+      <div class="dstat-card">
+        <div class="dstat-icon">🧠</div>
+        <div>
+          <span class="dstat-num">{{ disease_counts.get('brain', 0) }}</span>
+          <span class="dstat-label">Brain Scans</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <!-- Daily Scans -->
+      <div class="chart-card">
+        <h3>Daily Scans (Last 7 Days)</h3>
+        <canvas id="dailyChart" height="200"></canvas>
+      </div>
+
+      <!-- Disease Breakdown -->
+      <div class="chart-card">
+        <h3>Scans by Disease Type</h3>
+        <canvas id="diseaseChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Disease Breakdown Cards -->
+    <div class="disease-breakdown">
+      <div class="db-card" style="--c:#1a5fa8">
+        <div class="db-icon">🫁</div>
+        <div class="db-info">
+          <strong>Chest X-Ray</strong>
+          <span>{{ disease_counts.get('cxr', 0) }} scans</span>
+        </div>
+        <div class="db-bar-wrap">
+          <div class="db-bar" style="width:{% if total_scans > 0 %}{{ (disease_counts.get('cxr',0)/total_scans*100)|round }}{% else %}0{% endif %}%;background:var(--c)"></div>
+        </div>
+      </div>
+      <div class="db-card" style="--c:#c0392b">
+        <div class="db-icon">🔬</div>
+        <div class="db-info">
+          <strong>Malaria</strong>
+          <span>{{ disease_counts.get('malaria', 0) }} scans</span>
+        </div>
+        <div class="db-bar-wrap">
+          <div class="db-bar" style="width:{% if total_scans > 0 %}{{ (disease_counts.get('malaria',0)/total_scans*100)|round }}{% else %}0{% endif %}%;background:var(--c)"></div>
+        </div>
+      </div>
+      <div class="db-card" style="--c:#0a7c6e">
+        <div class="db-icon">👁️</div>
+        <div class="db-info">
+          <strong>Ocular</strong>
+          <span>{{ disease_counts.get('ocular', 0) }} scans</span>
+        </div>
+        <div class="db-bar-wrap">
+          <div class="db-bar" style="width:{% if total_scans > 0 %}{{ (disease_counts.get('ocular',0)/total_scans*100)|round }}{% else %}0{% endif %}%;background:var(--c)"></div>
+        </div>
+      </div>
+      <div class="db-card" style="--c:#6a1b9a">
+        <div class="db-icon">🧠</div>
+        <div class="db-info">
+          <strong>Brain Tumor</strong>
+          <span>{{ disease_counts.get('brain', 0) }} scans</span>
+        </div>
+        <div class="db-bar-wrap">
+          <div class="db-bar" style="width:{% if total_scans > 0 %}{{ (disease_counts.get('brain',0)/total_scans*100)|round }}{% else %}0{% endif %}%;background:var(--c)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Scans Table -->
+    <div class="dash-table-card">
+      <div class="dtc-header">
+        <h2>Recent Scans (All Users)</h2>
+        <span class="dtc-count">Last 20</span>
+      </div>
+      {% if recent_scans %}
+      <div class="table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>User</th>
+              <th>Disease Type</th>
+              <th>Prediction</th>
+              <th>Confidence</th>
+              <th>Status</th>
+              <th>Date & Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scan in recent_scans %}
+            <tr>
+              <td class="td-num">{{ loop.index }}</td>
+              <td class="td-user">
+                <div class="td-avatar">{{ scan.user.name[0].upper() }}</div>
+                {{ scan.user.name }}
+              </td>
+              <td>
+                <div class="td-disease">
+                  <span>
+                    {% if scan.disease_type == 'cxr' %}🫁 Chest X-Ray
+                    {% elif scan.disease_type == 'malaria' %}🔬 Malaria
+                    {% elif scan.disease_type == 'ocular' %}👁️ Ocular
+                    {% elif scan.disease_type == 'brain' %}🧠 Brain Tumor
+                    {% endif %}
+                  </span>
+                </div>
+              </td>
+              <td class="td-prediction">{{ scan.prediction }}</td>
+              <td>
+                <div class="td-conf">
+                  <div class="mini-bar">
+                    <div class="mini-fill" style="width:{{ scan.confidence }}%"></div>
+                  </div>
+                  <span>{{ scan.confidence }}%</span>
+                </div>
+              </td>
+              <td>
+                {% set pred_lower = scan.prediction.lower() %}
+                {% if 'normal' in pred_lower or 'uninfected' in pred_lower or 'no tumor' in pred_lower %}
+                  <span class="status-badge status-normal">Normal</span>
+                {% else %}
+                  <span class="status-badge status-detected">Detected</span>
+                {% endif %}
+              </td>
+              <td class="td-date">{{ scan.scanned_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-scans">
+        <div class="empty-icon">📊</div>
+        <h3>No scans yet</h3>
+        <p>Scans will appear here once users start analyzing images.</p>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <script>
+    // Daily scans chart
+    const dailyData = {{ daily | tojson }};
+    new Chart(document.getElementById('dailyChart'), {
+      type: 'bar',
+      data: {
+        labels: dailyData.map(d => d.date),
+        datasets: [{
+          label: 'Scans',
+          data: dailyData.map(d => d.count),
+          backgroundColor: 'rgba(26,95,168,0.7)',
+          borderColor: '#1a5fa8',
+          borderWidth: 1.5,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f0f0f0' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    // Disease breakdown donut chart
+    const dc = {{ disease_counts | tojson }};
+    new Chart(document.getElementById('diseaseChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Chest X-Ray', 'Malaria', 'Ocular', 'Brain Tumor'],
+        datasets: [{
+          data: [dc.cxr||0, dc.malaria||0, dc.ocular||0, dc.brain||0],
+          backgroundColor: ['#1a5fa8','#c0392b','#0a7c6e','#6a1b9a'],
+          borderWidth: 2, borderColor: '#fff',
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } }
+        },
+        cutout: '65%'
+      }
+    });
+  </script>
+</body>
+</html>

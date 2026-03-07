@@ -1,0 +1,13 @@
+flask
+tensorflow==2.15.1
+numpy
+pillow
+opencv-python-headless
+scikit-learn
+matplotlib
+gunicorn
+flask-sqlalchemy
+flask-login
+flask-bcrypt
+psycopg2-binary
+python-dotenv

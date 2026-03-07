@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — MediScan AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/dashboard.css"/>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="dash-nav">
+    <div class="dash-nav-inner">
+      <a href="/" class="dash-logo">
+        <div class="dash-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <rect x="8" y="1" width="4" height="18" rx="2" fill="white"/>
+            <rect x="1" y="8" width="18" height="4" rx="2" fill="white"/>
+          </svg>
+        </div>
+        MediScan <em>AI</em>
+      </a>
+      <div class="dash-nav-links">
+        <a href="/#scan" class="dnl">New Scan</a>
+        {% if current_user.is_admin %}
+          <a href="/admin" class="dnl admin-link">⚙ Admin</a>
+        {% endif %}
+        <div class="dash-user">
+          <div class="dash-avatar">{{ current_user.name[0].upper() }}</div>
+          <span>{{ current_user.name }}</span>
+        </div>
+        <a href="/logout" class="dnl logout-link">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="dash-main">
+    <!-- Header -->
+    <div class="dash-header">
+      <div>
+        <h1>Welcome back, <em>{{ current_user.name.split()[0] }}</em></h1>
+        <p>Here's a summary of your scan history</p>
+      </div>
+      <a href="/#scan" class="new-scan-btn">+ New Scan</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="dash-stats">
+      <div class="dstat-card">
+        <div class="dstat-icon">🔬</div>
+        <div>
+          <span class="dstat-num">{{ scans|length }}</span>
+          <span class="dstat-label">Total Scans</span>
+        </div>
+      </div>
+      <div class="dstat-card">
+        <div class="dstat-icon">✅</div>
+        <div>
+          <span class="dstat-num">{{ normal_count }}</span>
+          <span class="dstat-label">Normal Results</span>
+        </div>
+      </div>
+      <div class="dstat-card">
+        <div class="dstat-icon">⚠️</div>
+        <div>
+          <span class="dstat-num">{{ detected_count }}</span>
+          <span class="dstat-label">Conditions Found</span>
+        </div>
+      </div>
+      <div class="dstat-card">
+        <div class="dstat-icon">📅</div>
+        <div>
+          <span class="dstat-num">
+            {% if scans %}{{ scans[0].scanned_at.strftime('%b %d') }}{% else %}—{% endif %}
+          </span>
+          <span class="dstat-label">Last Scan</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scan History Table -->
+    <div class="dash-table-card">
+      <div class="dtc-header">
+        <h2>Scan History</h2>
+        <span class="dtc-count">{{ scans|length }} records</span>
+      </div>
+
+      {% if scans %}
+      <div class="table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Disease Type</th>
+              <th>Prediction</th>
+              <th>Confidence</th>
+              <th>Status</th>
+              <th>Date & Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scan in scans %}
+            <tr>
+              <td class="td-num">{{ loop.index }}</td>
+              <td>
+                <div class="td-disease">
+                  <span class="td-disease-icon">
+                    {% if scan.disease_type == 'cxr' %}🫁
+                    {% elif scan.disease_type == 'malaria' %}🔬
+                    {% elif scan.disease_type == 'ocular' %}👁️
+                    {% elif scan.disease_type == 'brain' %}🧠
+                    {% endif %}
+                  </span>
+                  <span>
+                    {% if scan.disease_type == 'cxr' %}Chest X-Ray
+                    {% elif scan.disease_type == 'malaria' %}Malaria
+                    {% elif scan.disease_type == 'ocular' %}Ocular
+                    {% elif scan.disease_type == 'brain' %}Brain Tumor
+                    {% endif %}
+                  </span>
+                </div>
+              </td>
+              <td class="td-prediction">{{ scan.prediction }}</td>
+              <td>
+                <div class="td-conf">
+                  <div class="mini-bar">
+                    <div class="mini-fill" style="width:{{ scan.confidence }}%"></div>
+                  </div>
+                  <span>{{ scan.confidence }}%</span>
+                </div>
+              </td>
+              <td>
+                {% set pred_lower = scan.prediction.lower() %}
+                {% if 'normal' in pred_lower or 'uninfected' in pred_lower or 'no tumor' in pred_lower %}
+                  <span class="status-badge status-normal">Normal</span>
+                {% else %}
+                  <span class="status-badge status-detected">Detected</span>
+                {% endif %}
+              </td>
+              <td class="td-date">{{ scan.scanned_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-scans">
+        <div class="empty-icon">🔍</div>
+        <h3>No scans yet</h3>
+        <p>Upload your first medical image to get started.</p>
+        <a href="/#scan" class="new-scan-btn">Start Scanning</a>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+
+</body>
+</html>
