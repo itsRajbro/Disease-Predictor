@@ -24,7 +24,6 @@
       <div class="nav-links">
         <a href="#scan" class="nav-link">Scan</a>
         <a href="#diseases" class="nav-link">Diseases</a>
-        <a href="#about" class="nav-link">About</a>
         <a href="/contact" class="nav-link">Contact</a>
         {% if current_user.is_authenticated %}
           {% if current_user.is_admin %}
@@ -288,32 +287,6 @@
           <div class="loading-overlay" id="loadingOverlay" style="display:none;">
             <div class="loading-ring"></div>
             <p>Analyzing<span class="ldots"></span></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── About ── -->
-  <section class="about-section" id="about">
-    <div class="section-inner">
-      <div class="about-grid">
-        <div class="about-left">
-          <span class="eyebrow">About MediScan AI</span>
-          <h2 class="section-title">Built for Early<br/><em>Detection.</em></h2>
-          <p>MediScan AI uses convolutional neural networks trained on open medical imaging datasets to provide fast, accessible disease screening for research and educational purposes.</p>
-          <p style="margin-top:1rem;">Each model was trained using TensorFlow with data augmentation and dropout regularization to improve generalization across diverse image sources.</p>
-          <div class="about-note">
-            <strong>⚕️ Medical Disclaimer</strong>
-            <p>This tool is not a certified medical device. Results should not be used as the basis for clinical diagnosis or treatment decisions.</p>
-          </div>
-        </div>
-        <div class="about-right">
-          <div class="tech-list">
-            <div class="tech-item"><div class="ti-icon">🧠</div><div><strong>TensorFlow / Keras</strong><small>CNN model training & inference</small></div></div>
-            <div class="tech-item"><div class="ti-icon">🐍</div><div><strong>Python / Flask</strong><small>Backend API & routing</small></div></div>
-            <div class="tech-item"><div class="ti-icon">🖼️</div><div><strong>Pillow / NumPy</strong><small>Image preprocessing pipeline</small></div></div>
-            <div class="tech-item"><div class="ti-icon">📊</div><div><strong>Kaggle Datasets</strong><small>Verified open medical imaging data</small></div></div>
           </div>
         </div>
       </div>
