@@ -204,6 +204,56 @@
       </div>
       {% endif %}
     </div>
+    <!-- Feedback Table -->
+<div class="dash-table-card" style="margin-top:1.5rem;">
+  <div class="dtc-header">
+    <h2>Recent Feedback</h2>
+    <span class="dtc-count">⭐ Avg: {{ avg_rating }}/5</span>
+  </div>
+  {% if feedbacks %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Subject</th>
+          <th>Disease</th>
+          <th>Rating</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fb in feedbacks %}
+        <tr>
+          <td class="td-num">{{ loop.index }}</td>
+          <td>{{ fb.name }}</td>
+          <td class="td-date">{{ fb.email }}</td>
+          <td>{{ fb.subject }}</td>
+          <td>
+            {% if fb.disease_type == 'cxr' %}🫁 CXR
+            {% elif fb.disease_type == 'malaria' %}🔬 Malaria
+            {% elif fb.disease_type == 'ocular' %}👁️ Ocular
+            {% elif fb.disease_type == 'brain' %}🧠 Brain
+            {% elif fb.disease_type %}{{ fb.disease_type }}
+            {% else %}—{% endif %}
+          </td>
+          <td>{{ '⭐' * fb.rating }}</td>
+          <td class="td-date">{{ fb.scanned_at.strftime('%b %d, %Y') if fb.scanned_at else fb.submitted_at.strftime('%b %d, %Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-scans">
+    <div class="empty-icon">💬</div>
+    <h3>No feedback yet</h3>
+    <p>Feedback submissions will appear here.</p>
+  </div>
+  {% endif %}
+</div>
   </main>
 
   <script>

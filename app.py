@@ -47,6 +47,17 @@ class Scan(db.Model):
     confidence   = db.Column(db.Float, nullable=False)
     scanned_at   = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Feedback(db.Model):
+    __tablename__ = 'feedback'
+    id           = db.Column(db.Integer, primary_key=True)
+    name         = db.Column(db.String(120), nullable=False)
+    email        = db.Column(db.String(120), nullable=False)
+    subject      = db.Column(db.String(200), nullable=False)
+    message      = db.Column(db.Text, nullable=False)
+    rating       = db.Column(db.Integer, nullable=False)
+    disease_type = db.Column(db.String(50), nullable=True)
+    submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -238,13 +249,17 @@ def admin():
             func.date(Scan.scanned_at) == day
         ).count()
         daily.append({'date': day.strftime('%b %d'), 'count': count})
-
+    feedbacks = Feedback.query.order_by(Feedback.submitted_at.desc()).limit(20).all()
+    avg_rating = db.session.query(db.func.avg(Feedback.rating)).scalar()
+    avg_rating = round(avg_rating, 1) if avg_rating else 0
     return render_template('admin.html',
         total_users=total_users,
         total_scans=total_scans,
         recent_scans=recent_scans,
         disease_counts=disease_counts,
-        daily=daily
+        daily=daily,
+        feedbacks=feedbacks,
+        avg_rating=avg_rating
     )
 
 # ── Route: Predict ────────────────────────────────────────────────────────────
@@ -303,6 +318,31 @@ def upload_model():
     file = request.files['model']
     file.save(os.path.join(MODEL_DIR, file.filename))
     return jsonify({'saved': file.filename})
+
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    if request.method == 'POST':
+        name         = request.form.get('name', '').strip()
+        email        = request.form.get('email', '').strip()
+        subject      = request.form.get('subject', '').strip()
+        message      = request.form.get('message', '').strip()
+        rating       = request.form.get('rating', 5)
+        disease_type = request.form.get('disease_type', '').strip()
+
+        if not all([name, email, subject, message, rating]):
+            flash('All fields are required.', 'error')
+            return render_template('contact.html')
+
+        feedback = Feedback(
+            name=name, email=email, subject=subject,
+            message=message, rating=int(rating),
+            disease_type=disease_type or None
+        )
+        db.session.add(feedback)
+        db.session.commit()
+        flash('Thank you for your feedback!', 'success')
+        return redirect(url_for('contact'))
+    return render_template('contact.html')
 # ── Init DB + Admin ───────────────────────────────────────────────────────────
 def init_db():
     with app.app_context():
