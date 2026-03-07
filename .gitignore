@@ -6,3 +6,4 @@ datasets/
 models/
 *.sqlite
 *.json
+upload_model.py
