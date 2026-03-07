@@ -62,22 +62,47 @@ def admin_required(f):
     return decorated
 
 # ── Load ML models ────────────────────────────────────────────────────────────
+from huggingface_hub import hf_hub_download, login
+
+HF_REPO   = "YOUR_HF_USERNAME/mediscan-models"
+MODEL_DIR = "/tmp/models"
+
+def download_models():
+    hf_token = os.getenv('HF_TOKEN')
+    if hf_token:
+        login(token=hf_token)
+    os.makedirs(MODEL_DIR, exist_ok=True)
+    files = [
+        "cxr_model.h5", "malaria_model.h5",
+        "ocular_model.h5", "brain_model.h5",
+        "cxr_classes.json", "malaria_classes.json",
+        "ocular_classes.json", "brain_classes.json",
+    ]
+    for filename in files:
+        dest = os.path.join(MODEL_DIR, filename)
+        if not os.path.exists(dest):
+            print(f"⬇️ Downloading {filename}...")
+            hf_hub_download(
+                repo_id=HF_REPO,
+                filename=filename,
+                local_dir=MODEL_DIR,
+                token=hf_token
+            )
+            print(f"✅ {filename} ready")
+
+download_models()
+
 MODELS = {}
-if os.path.exists('/models'):
-    MODEL_DIR='/models'
-else:
-    MODEL_DIR='models'
 MODEL_FILES = {
-    "cxr":    f"{MODEL_DIR}/cxr_model.h5",
-    "malaria": f"{MODEL_DIR}/malaria_model.h5",
-    "ocular":  f"{MODEL_DIR}/ocular_model.h5",
-    "brain":   f"{MODEL_DIR}/brain_model.h5",
+    "cxr":     f"{MODEL_DIR}/cxr_model.h5",
+    "malaria":  f"{MODEL_DIR}/malaria_model.h5",
+    "ocular":   f"{MODEL_DIR}/ocular_model.h5",
+    "brain":    f"{MODEL_DIR}/brain_model.h5",
 }
 for name, path in MODEL_FILES.items():
     if os.path.exists(path):
         MODELS[name] = tf.keras.models.load_model(path)
         print(f"✅ Loaded {name} model")
-
 LABELS = {
     "cxr":    {0: "COVID-19", 1: "Normal", 2: "Pneumonia", 3: "Tuberculosis"},
     "malaria": {0: "Malaria Detected (Parasitized)", 1: "Normal (Uninfected)"},

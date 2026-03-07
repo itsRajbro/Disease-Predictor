@@ -11,3 +11,4 @@ flask-login
 flask-bcrypt
 psycopg2-binary
 python-dotenv
+huggingface_hub
