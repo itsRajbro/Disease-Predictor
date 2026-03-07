@@ -89,8 +89,10 @@ def download_models():
                 token=hf_token
             )
             print(f"✅ {filename} ready")
-
-download_models()
+try:
+    download_models()
+except Exception as e:
+    print(f"❌ Model download failed: {e}")
 
 MODELS = {}
 MODEL_FILES = {
@@ -100,9 +102,14 @@ MODEL_FILES = {
     "brain":    f"{MODEL_DIR}/brain_model.h5",
 }
 for name, path in MODEL_FILES.items():
-    if os.path.exists(path):
-        MODELS[name] = tf.keras.models.load_model(path)
-        print(f"✅ Loaded {name} model")
+    try:
+        if os.path.exists(path):
+            MODELS[name] = tf.keras.models.load_model(path)
+            print(f"✅ Loaded {name} model")
+        else:
+            print(f"⚠️ Model file not found: {path}")
+    except Exception as e:
+        print(f"❌ Failed to load {name}: {e}")
 LABELS = {
     "cxr":    {0: "COVID-19", 1: "Normal", 2: "Pneumonia", 3: "Tuberculosis"},
     "malaria": {0: "Malaria Detected (Parasitized)", 1: "Normal (Uninfected)"},
@@ -311,4 +318,5 @@ def init_db():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
