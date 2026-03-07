@@ -9,6 +9,7 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 from functools import wraps
+import sys
 
 load_dotenv()
 
@@ -62,11 +63,15 @@ def admin_required(f):
 
 # ── Load ML models ────────────────────────────────────────────────────────────
 MODELS = {}
+if os.path.exists('/models'):
+    MODEL_DIR='/models'
+else:
+    MODEL_DIR='models'
 MODEL_FILES = {
-    "cxr":    "models/cxr_model.h5",
-    "malaria": "models/malaria_model.h5",
-    "ocular":  "models/ocular_model.h5",
-    "brain":   "models/brain_model.h5",
+    "cxr":    f"{MODEL_DIR}/cxr_model.h5",
+    "malaria": f"{MODEL_DIR}/malaria_model.h5",
+    "ocular":  f"{MODEL_DIR}/ocular_model.h5",
+    "brain":   f"{MODEL_DIR}/brain_model.h5",
 }
 for name, path in MODEL_FILES.items():
     if os.path.exists(path):
@@ -254,7 +259,14 @@ def predict():
         'confidence':   confidence_rounded,
         'saved':        current_user.is_authenticated
     })
-
+# ── Temporary model upload route (remove after deployment) ───────────────────
+@app.route('/upload-model', methods=['POST'])
+def upload_model():
+    if not os.path.exists(MODEL_DIR):
+        os.makedirs(MODEL_DIR)
+    file = request.files['model']
+    file.save(os.path.join(MODEL_DIR, file.filename))
+    return jsonify({'saved': file.filename})
 # ── Init DB + Admin ───────────────────────────────────────────────────────────
 def init_db():
     with app.app_context():
