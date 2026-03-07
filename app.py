@@ -64,7 +64,7 @@ def admin_required(f):
 # ── Load ML models ────────────────────────────────────────────────────────────
 from huggingface_hub import hf_hub_download, login
 
-HF_REPO   = "YOUR_HF_USERNAME/mediscan-models"
+HF_REPO   = "RAyush257/mediscan-models"
 MODEL_DIR = "/tmp/models"
 
 def download_models():
