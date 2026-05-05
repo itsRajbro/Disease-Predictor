@@ -14,7 +14,7 @@ An AI-powered medical image analysis platform that detects diseases from uploade
 
 ## 🌐 Live Demo
 
-**[mediscan-ai-production-1c8d.up.railway.app](https://mediscan-ai-production-1c8d.up.railway.app)**
+**[mediscan-ai-ds1x.onrender.com](https://mediscan-ai-ds1x.onrender.com/)**
 
 ---
 
