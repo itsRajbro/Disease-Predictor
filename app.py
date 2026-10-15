@@ -73,45 +73,46 @@ def admin_required(f):
     return decorated
 
 # ── Load ML models ────────────────────────────────────────────────────────────
-from huggingface_hub import hf_hub_download, login
+import gc, threading
+from huggingface_hub import hf_hub_download
 
-HF_REPO   = "RAyush257/mediscan-models"
+HF_REPO = "RAyush257/mediscan-models"
 MODEL_DIR = "/tmp/models"
-
-def download_models():
-    hf_token = os.getenv('HF_TOKEN')
-    if hf_token:
-        login(token=hf_token)
-    os.makedirs(MODEL_DIR, exist_ok=True)
-    files = [
-        "cxr_model.h5", "malaria_model.h5",
-        "ocular_model.h5", "brain_model.h5",
-        "cxr_classes.json", "malaria_classes.json",
-        "ocular_classes.json", "brain_classes.json",
-    ]
-    for filename in files:
-        dest = os.path.join(MODEL_DIR, filename)
-        if not os.path.exists(dest):
-            print(f"⬇️ Downloading {filename}...")
-            hf_hub_download(
-                repo_id=HF_REPO,
-                filename=filename,
-                local_dir=MODEL_DIR,
-                token=hf_token
-            )
-            print(f"✅ {filename} ready")
-try:
-    download_models()
-except Exception as e:
-    print(f"❌ Model download failed: {e}")
+os.makedirs(MODEL_DIR, exist_ok=True)
 
 MODEL_FILES = {
-    "cxr":     f"{MODEL_DIR}/cxr_model.h5",
-    "malaria":  f"{MODEL_DIR}/malaria_model.h5",
-    "ocular":   f"{MODEL_DIR}/ocular_model.h5",
-    "brain":    f"{MODEL_DIR}/brain_model.h5",
+    "cxr": f"{MODEL_DIR}/cxr_model.h5",
+    "malaria": f"{MODEL_DIR}/malaria_model.h5",
+    "ocular": f"{MODEL_DIR}/ocular_model.h5",
+    "brain": f"{MODEL_DIR}/brain_model.h5",
 }
-MODELS = {}
+
+_current = {"name": None, "model": None}
+MODEL_LOCK = threading.Lock()
+
+def ensure_file(path):
+    if not os.path.exists(path):
+        hf_hub_download(
+            repo_id=HF_REPO,
+            filename=os.path.basename(path),
+            local_dir=MODEL_DIR,
+            token=os.getenv("HF_TOKEN"),
+        )
+
+def get_model(name):
+    """Keep only ONE model in memory at a time. Call while holding MODEL_LOCK."""
+    if _current["name"] == name:
+        return _current["model"]
+    path = MODEL_FILES.get(name)
+    if not path:
+        return None
+    ensure_file(path)                       # download only when first needed
+    _current["model"], _current["name"] = None, None
+    tf.keras.backend.clear_session()        # free the previous model
+    gc.collect()
+    _current["model"] = tf.keras.models.load_model(path, compile=False)
+    _current["name"] = name
+    return _current["model"]
 
 def get_model(name):
     if name not in MODELS:
@@ -142,7 +143,7 @@ LABELS = {
 def preprocess_image(image_bytes, target_size=(150, 150)):
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     img = img.resize(target_size)
-    arr = np.array(img) / 255.0
+    arr = np.array(img, dtype="float32") / 255.0
     return np.expand_dims(arr, axis=0)
 
 # ── Routes: Pages ─────────────────────────────────────────────────────────────
@@ -235,7 +236,7 @@ def admin():
 
     # Disease breakdown
     disease_counts = {}
-    for name in MODELS.keys():
+    for name in MODEL_FILES.keys():
         disease_counts[name] = Scan.query.filter_by(disease_type=name).count()
 
     # Daily scans (last 7 days)
@@ -274,10 +275,11 @@ def predict():
 
     image_bytes = request.files['image'].read()
     processed   = preprocess_image(image_bytes)
-    model = get_model(disease)
-    if model is None:
-        return jsonify({'error': f'Model for {disease} not available'}), 500
-    prediction  = model.predict(processed)
+    with MODEL_LOCK:
+        model = get_model(disease)
+        if model is None:
+            return jsonify({'error': f'Model for {disease} not available'}), 500
+        prediction = model(processed, training=False).numpy()
     labels      = LABELS[disease]
 
     if disease in ['malaria', 'brain']:
@@ -359,6 +361,11 @@ def init_db():
             db.session.add(admin_user)
             db.session.commit()
             print(f"✅ Admin created: {ADMIN_EMAIL}")
+
+try:
+    init_db()
+except Exception as e:
+    print(f"DB init failed: {e}")
 
 if __name__ == '__main__':
     init_db()
